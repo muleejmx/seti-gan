@@ -33,18 +33,29 @@ root_dir = os.path.abspath('.')
 data_dir = os.path.join(root_dir, 'Data')
 
 # dictionary of data: labels
-# with open('labelled_files.pkl', 'rb') as f:
-#     data = pickle.load(f)
+with open('labelled_files.pkl', 'rb') as f:
+    data = pickle.load(f)
+
+data = [k for k, v in data.iteritems() if v == 6.0 or v == 7.0]
+
+fig = plt.figure()
+plt.imshow(fitsio.read(data_loc + str(data[0]) + ext), cmap='gray', aspect = 'auto')
+fig.savefig('orig.png', dpi = fig.dpi, transparent = True)
+
 
 # def flatten(x):
 #     return [item for sublist in x for item in sublist]
 
-# data = [k for k, v in data.iteritems() if v == 6.0 or v == 7.0]
 # pix_data = np.array(flatten([fitsio.read(data_loc + d + ext) for d in data]))
 
 # binary data
 with open('binary_diag.pkl', 'rb') as f:
     data = pickle.load(f)
+
+fig = plt.figure()
+plt.imshow(data[0], cmap='gray', aspect = 'auto')
+fig.savefig('binary.png', dpi = fig.dpi, transparent = True)
+
 
 # thresholding code
 # threshold = np.sort(pix_data.flatten())
@@ -70,95 +81,95 @@ with open('binary_diag.pkl', 'rb') as f:
 # plt.show()
 
 
-TRAIN_LIM = int(len(data) * 0.8)
+# TRAIN_LIM = int(len(data) * 0.8)
 
-# train_x = []
+# # train_x = []
 
-# for d in data[:TRAIN_LIM]:
-# 	train_x.append(fitsio.read('/Users/mulan/desktop/fits_data/' + d +  '.fits'))
+# # for d in data[:TRAIN_LIM]:
+# # 	train_x.append(fitsio.read('/Users/mulan/desktop/fits_data/' + d +  '.fits'))
 
-# train_x = np.asarray(train_x)
-train_x = data[:TRAIN_LIM]
-print(train_x.shape)
+# # train_x = np.asarray(train_x)
+# train_x = data[:TRAIN_LIM]
+# print(train_x.shape)
 
-#define vars
-g_input_shape = 100
-d_input_shape = (16, 512)
-hidden_1_num_units = 500
-hidden_2_num_units = 500
-g_output_num_units = 8192
-d_output_num_units = 1
-epochs = 100
-batch_size = 128
+# #define vars
+# g_input_shape = 100
+# d_input_shape = (16, 512)
+# hidden_1_num_units = 500
+# hidden_2_num_units = 500
+# g_output_num_units = 8192
+# d_output_num_units = 1
+# epochs = 200
+# batch_size = 128
 
 
-# generator
-model_1 = Sequential([
-    Dense(units=hidden_1_num_units,
-    	input_dim=g_input_shape,
-    	activation='relu',
-    	kernel_regularizer=L1L2(1e-5, 1e-5)),
+# # generator
+# model_1 = Sequential([
+#     Dense(units=hidden_1_num_units,
+#     	input_dim=g_input_shape,
+#     	activation='relu',
+#     	kernel_regularizer=L1L2(1e-5, 1e-5)),
 
-    Dense(units=hidden_2_num_units,
-    	activation='relu', 
-    	kernel_regularizer=L1L2(1e-5, 1e-5)),
+#     Dense(units=hidden_2_num_units,
+#     	activation='relu', 
+#     	kernel_regularizer=L1L2(1e-5, 1e-5)),
         
-    Dense(units=g_output_num_units,
-    	activation='sigmoid',
-    	kernel_regularizer=L1L2(1e-5, 1e-5)),
+#     Dense(units=g_output_num_units,
+#     	activation='sigmoid',
+#     	kernel_regularizer=L1L2(1e-5, 1e-5)),
     
-    Reshape(d_input_shape),
-])
+#     Reshape(d_input_shape),
+# ])
 
-# discriminator
-model_2 = Sequential([
-    InputLayer(input_shape=d_input_shape),
+# # discriminator
+# model_2 = Sequential([
+#     InputLayer(input_shape=d_input_shape),
     
-    Flatten(),
+#     Flatten(),
         
-    Dense(units=hidden_1_num_units,
-    	activation='relu',
-    	kernel_regularizer=L1L2(1e-5, 1e-5)),
+#     Dense(units=hidden_1_num_units,
+#     	activation='relu',
+#     	kernel_regularizer=L1L2(1e-5, 1e-5)),
 
-    Dense(units=hidden_2_num_units,
-    	activation='relu',
-    	kernel_regularizer=L1L2(1e-5, 1e-5)),
+#     Dense(units=hidden_2_num_units,
+#     	activation='relu',
+#     	kernel_regularizer=L1L2(1e-5, 1e-5)),
         
-    Dense(units=d_output_num_units,
-    	activation='sigmoid',
-    	kernel_regularizer=L1L2(1e-5, 1e-5)),
-])
+#     Dense(units=d_output_num_units,
+#     	activation='sigmoid',
+#     	kernel_regularizer=L1L2(1e-5, 1e-5)),
+# ])
 
-gan = simple_gan(model_1, model_2, normal_latent_sampling((100,)))
+# gan = simple_gan(model_1, model_2, normal_latent_sampling((100,)))
 
-model = AdversarialModel(base_model=gan,
-	player_params=[model_1.trainable_weights, model_2.trainable_weights])
+# model = AdversarialModel(base_model=gan,
+# 	player_params=[model_1.trainable_weights, model_2.trainable_weights])
 
-model.adversarial_compile(adversarial_optimizer=AdversarialOptimizerSimultaneous(),
-	player_optimizers=['adam', 'adam'],
-	loss='binary_crossentropy')
+# model.adversarial_compile(adversarial_optimizer=AdversarialOptimizerSimultaneous(),
+# 	player_optimizers=['adam', 'adam'],
+# 	loss='binary_crossentropy')
 
-history = model.fit(x=train_x,
-	y=gan_targets(train_x.shape[0]),
-	epochs=epochs,
-	batch_size=batch_size)
+# history = model.fit(x=train_x,
+# 	y=gan_targets(train_x.shape[0]),
+# 	epochs=epochs,
+# 	batch_size=batch_size)
 
-fig = plt.figure()
+# fig = plt.figure()
 
-plt.plot(history.history['player_0_loss'])
-plt.plot(history.history['player_1_loss'])
-plt.plot(history.history['loss'])
+# plt.plot(history.history['player_0_loss'])
+# plt.plot(history.history['player_1_loss'])
+# plt.plot(history.history['loss'])
 
-fig.savefig('losses.png', dpi = fig.dpi)
+# fig.savefig('losses.png', dpi = fig.dpi)
 
-zsamples = np.random.normal(size=(10, 100))
+# zsamples = np.random.normal(size=(10, 100))
 
-pred = model_1.predict(zsamples)
+# pred = model_1.predict(zsamples)
 
-for i in range(pred.shape[0]):
-	fig = plt.figure()
-	plt.imshow(pred[i, :], cmap='gray', aspect = 'auto')
-	fig.savefig(str(i) + typ + '.png', dpi = fig.dpi)
+# for i in range(pred.shape[0]):
+# 	fig = plt.figure()
+# 	plt.imshow(pred[i, :], cmap='gray', aspect = 'auto')
+# 	fig.savefig(str(i) + typ + '_' + str(epochs) + '.png', dpi = fig.dpi, transparent = True)
 # img = fitsio.read('/Users/mulan/desktop/fits_data/' + data[0] + '.fits', flatten=True)
 
 # plt.imshow(img, cmap='gray', aspect = 'auto')
