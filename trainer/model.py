@@ -108,23 +108,25 @@ model.adversarial_compile(adversarial_optimizer=AdversarialOptimizerSimultaneous
 
 history = model.fit(x=train_x,
 	y=gan_targets(train_x.shape[0]),
-	epochs=100,
+	epochs=20,
 	batch_size=batch_size)
 
+fig = plt.figure()
 
-# plt.plot(history.history['player_0_loss'])
-# plt.plot(history.history['player_1_loss'])
-# plt.plot(history.history['loss'])
+plt.plot(history.history['player_0_loss'])
+plt.plot(history.history['player_1_loss'])
+plt.plot(history.history['loss'])
 
-# plt.show()
+fig.savefig('losses.png', dpi = fig.dpi)
 
 zsamples = np.random.normal(size=(10, 100))
 
 pred = model_1.predict(zsamples)
 
 for i in range(pred.shape[0]):
-    plt.imshow(pred[i, :], cmap='gray', aspect = 'auto')
-    plt.show()
+	fig = plt.figure()
+	plt.imshow(pred[i, :], cmap='gray', aspect = 'auto')
+	fig.savefig(str(i) + '.png', dpi = fig.dpi)
 # img = fitsio.read('/Users/mulan/desktop/fits_data/' + data[0] + '.fits', flatten=True)
 
 # plt.imshow(img, cmap='gray', aspect = 'auto')
