@@ -20,11 +20,10 @@ from scipy.misc import imread
 print("Hello world!")
 print(keras.__version__)
 
-def one_hot(i):
-	a = np.zeros(5, np.int32)
-	a[i] = 1
-	return a
+data_loc = '/Users/mulan/desktop/fits_data/'
+ext = '.fits'
 
+typ = '_diag'
 # stop randomness
 seed = 128
 rng = np.random.RandomState(seed)
@@ -34,21 +33,54 @@ root_dir = os.path.abspath('.')
 data_dir = os.path.join(root_dir, 'Data')
 
 # dictionary of data: labels
-with open('labelled_files.pkl', 'rb') as f:
+# with open('labelled_files.pkl', 'rb') as f:
+#     data = pickle.load(f)
+
+# def flatten(x):
+#     return [item for sublist in x for item in sublist]
+
+# data = [k for k, v in data.iteritems() if v == 6.0 or v == 7.0]
+# pix_data = np.array(flatten([fitsio.read(data_loc + d + ext) for d in data]))
+
+# binary data
+with open('binary_diag.pkl', 'rb') as f:
     data = pickle.load(f)
 
-data = [k for k, v in data.iteritems() if v == 4.0]
+# thresholding code
+# threshold = np.sort(pix_data.flatten())
+# print(len(threshold))
+
+# plt.hist(threshold, bins = 100, range = [0, 0.78*10**9])
+# plt.show()
+
+# THRESH = threshold[(int(len(threshold) * 0.89))]
+# binary_data = np.copy(pix_data)
+# binary_data[binary_data < THRESH] = 0
+# binary_data[binary_data >= THRESH] = 1
+# binary_data = np.reshape(binary_data, (len(data), 16, 512))
+
+# with open('binary_diag.pkl', 'wb') as outfile:
+#     pickle.dump(binary_data, outfile, protocol=pickle.HIGHEST_PROTOCOL)
+
+# plt.imshow(binary_data[1], aspect = 'auto', cmap = 'gray')
+# plt.axis('off')
+# plt.show()
+# plt.imshow(fitsio.read(data_loc + data[1] + ext), cmap='gray', aspect = 'auto')
+# plt.axis('off')
+# plt.show()
+
 
 TRAIN_LIM = int(len(data) * 0.8)
 
-train_x = []
-train_y = []
+# train_x = []
 
-for d in data[:TRAIN_LIM]:
-	train_x.append(fitsio.read('/Users/mulan/desktop/fits_data/' + d +  '.fits'))
-	train_y.append(one_hot(4))
+# for d in data[:TRAIN_LIM]:
+# 	train_x.append(fitsio.read('/Users/mulan/desktop/fits_data/' + d +  '.fits'))
 
-train_x = np.asarray(train_x)
+# train_x = np.asarray(train_x)
+train_x = data[:TRAIN_LIM]
+print(train_x.shape)
+
 #define vars
 g_input_shape = 100
 d_input_shape = (16, 512)
@@ -56,7 +88,7 @@ hidden_1_num_units = 500
 hidden_2_num_units = 500
 g_output_num_units = 8192
 d_output_num_units = 1
-epochs = 25
+epochs = 100
 batch_size = 128
 
 
@@ -108,7 +140,7 @@ model.adversarial_compile(adversarial_optimizer=AdversarialOptimizerSimultaneous
 
 history = model.fit(x=train_x,
 	y=gan_targets(train_x.shape[0]),
-	epochs=10,
+	epochs=epochs,
 	batch_size=batch_size)
 
 fig = plt.figure()
@@ -126,7 +158,7 @@ pred = model_1.predict(zsamples)
 for i in range(pred.shape[0]):
 	fig = plt.figure()
 	plt.imshow(pred[i, :], cmap='gray', aspect = 'auto')
-	fig.savefig(str(i) + '.png', dpi = fig.dpi)
+	fig.savefig(str(i) + typ + '.png', dpi = fig.dpi)
 # img = fitsio.read('/Users/mulan/desktop/fits_data/' + data[0] + '.fits', flatten=True)
 
 # plt.imshow(img, cmap='gray', aspect = 'auto')
