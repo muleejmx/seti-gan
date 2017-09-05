@@ -108,7 +108,7 @@ model.adversarial_compile(adversarial_optimizer=AdversarialOptimizerSimultaneous
 
 history = model.fit(x=train_x,
 	y=gan_targets(train_x.shape[0]),
-	epochs=20,
+	epochs=10,
 	batch_size=batch_size)
 
 fig = plt.figure()
